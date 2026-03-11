@@ -33,26 +33,45 @@
         <div class="alert alert-info">No tasks yet. Create one to get started.</div>
     @else
         <div class="card">
-            <ul class="list-group list-group-flush" id="task-list">
-                @foreach ($tasks as $task)
-                    <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ $task->id }}">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="handle cursor-grab" style="cursor: grab;">&#9776;</span>
-                            <span class="badge bg-secondary">{{ $task->priority }}</span>
-                            <span>{{ $task->name }}</span>
-                            <small class="text-muted">{{ $task->project->name }}</small>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('Delete this task?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th style="width: 60px;">#</th>
+                            <th>Task Name</th>
+                            <th>Project</th>
+                            <th>Start Date</th>
+                            <th>Due Date</th>
+                            <th>Created</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="task-list">
+                        @foreach ($tasks as $task)
+                            <tr data-id="{{ $task->id }}">
+                                <td><span class="handle" style="cursor: grab;">&#9776;</span></td>
+                                <td><span class="badge bg-secondary">{{ $task->priority }}</span></td>
+                                <td>{{ $task->name }}</td>
+                                <td><small class="text-muted">{{ $task->project->name }}</small></td>
+                                <td>{{ $task->start_date?->format('M d, Y') ?? '—' }}</td>
+                                <td>{{ $task->due_date?->format('M d, Y') ?? '—' }}</td>
+                                <td><small class="text-muted">{{ $task->created_at->format('M d, Y') }}</small></td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('Delete this task?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     @endif
 @endsection
@@ -61,14 +80,14 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const list = document.getElementById('task-list');
-        if (!list) return;
+        const tbody = document.getElementById('task-list');
+        if (!tbody) return;
 
-        Sortable.create(list, {
+        Sortable.create(tbody, {
             handle: '.handle',
             animation: 150,
             onEnd: function () {
-                const ids = Array.from(list.children).map(el => el.dataset.id);
+                const ids = Array.from(tbody.children).map(tr => tr.dataset.id);
 
                 fetch('{{ route('tasks.reorder') }}', {
                     method: 'POST',
@@ -81,7 +100,7 @@
                 })
                 .then(response => response.json())
                 .then(() => {
-                    list.querySelectorAll('.badge').forEach((badge, index) => {
+                    tbody.querySelectorAll('.badge').forEach((badge, index) => {
                         badge.textContent = index + 1;
                     });
                 });

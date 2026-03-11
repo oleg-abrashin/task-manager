@@ -34,14 +34,15 @@ class TaskController extends Controller
 
     public function store(StoreTaskRequest $request): RedirectResponse
     {
-        $maxPriority = Task::where('project_id', $request->project_id)->max('priority') ?? 0;
+        $data = $request->validated();
 
-        Task::create([
-            ...$request->validated(),
-            'priority' => $maxPriority + 1,
-        ]);
+        if (empty($data['priority'])) {
+            $data['priority'] = Task::where('project_id', $data['project_id'])->max('priority') + 1;
+        }
 
-        return redirect()->route('tasks.index', ['project_id' => $request->project_id])
+        Task::create($data);
+
+        return redirect()->route('tasks.index', ['project_id' => $data['project_id']])
             ->with('success', 'Task created.');
     }
 

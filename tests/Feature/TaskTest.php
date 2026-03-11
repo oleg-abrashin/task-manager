@@ -56,17 +56,22 @@ class TaskTest extends TestCase
         $response = $this->post(route('tasks.store'), [
             'name' => 'Test Task',
             'project_id' => $this->project->id,
+            'priority' => 5,
+            'start_date' => '2026-04-01',
+            'due_date' => '2026-04-15',
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('tasks', [
-            'name' => 'Test Task',
-            'project_id' => $this->project->id,
-            'priority' => 1,
-        ]);
+
+        $task = Task::where('name', 'Test Task')->first();
+        $this->assertNotNull($task);
+        $this->assertEquals($this->project->id, $task->project_id);
+        $this->assertEquals(5, $task->priority);
+        $this->assertEquals('2026-04-01', $task->start_date->format('Y-m-d'));
+        $this->assertEquals('2026-04-15', $task->due_date->format('Y-m-d'));
     }
 
-    public function test_task_store_assigns_next_priority(): void
+    public function test_task_store_auto_assigns_priority_when_empty(): void
     {
         Task::factory()->for($this->project)->create(['priority' => 1]);
         Task::factory()->for($this->project)->create(['priority' => 2]);
@@ -89,15 +94,33 @@ class TaskTest extends TestCase
         $response->assertSessionHasErrors(['name', 'project_id']);
     }
 
+    public function test_task_store_validates_due_date_after_start_date(): void
+    {
+        $response = $this->post(route('tasks.store'), [
+            'name' => 'Task',
+            'project_id' => $this->project->id,
+            'start_date' => '2026-05-10',
+            'due_date' => '2026-05-01',
+        ]);
+
+        $response->assertSessionHasErrors('due_date');
+    }
+
     public function test_task_edit_form_displays(): void
     {
-        $task = Task::factory()->for($this->project)->create(['priority' => 1]);
+        $task = Task::factory()->for($this->project)->create([
+            'priority' => 1,
+            'start_date' => '2026-04-01',
+            'due_date' => '2026-04-15',
+        ]);
 
         $response = $this->get(route('tasks.edit', $task));
 
         $response->assertOk();
         $response->assertSee('Edit Task');
         $response->assertSee($task->name);
+        $response->assertSee('2026-04-01');
+        $response->assertSee('2026-04-15');
     }
 
     public function test_task_can_be_updated(): void
@@ -107,13 +130,18 @@ class TaskTest extends TestCase
         $response = $this->put(route('tasks.update', $task), [
             'name' => 'Updated Name',
             'project_id' => $this->project->id,
+            'priority' => 3,
+            'start_date' => '2026-06-01',
+            'due_date' => '2026-06-30',
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('tasks', [
-            'id' => $task->id,
-            'name' => 'Updated Name',
-        ]);
+
+        $task->refresh();
+        $this->assertEquals('Updated Name', $task->name);
+        $this->assertEquals(3, $task->priority);
+        $this->assertEquals('2026-06-01', $task->start_date->format('Y-m-d'));
+        $this->assertEquals('2026-06-30', $task->due_date->format('Y-m-d'));
     }
 
     public function test_task_can_be_deleted(): void
@@ -175,5 +203,46 @@ class TaskTest extends TestCase
 
         $this->assertInstanceOf(Project::class, $task->project);
         $this->assertEquals($this->project->id, $task->project->id);
+    }
+
+    public function test_task_dates_are_cast(): void
+    {
+        $task = Task::factory()->for($this->project)->create([
+            'priority' => 1,
+            'start_date' => '2026-04-01',
+            'due_date' => '2026-04-15',
+        ]);
+
+        $task->refresh();
+
+        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $task->start_date);
+        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $task->due_date);
+    }
+
+    public function test_task_dates_are_nullable(): void
+    {
+        $this->post(route('tasks.store'), [
+            'name' => 'No Dates Task',
+            'project_id' => $this->project->id,
+        ]);
+
+        $task = Task::where('name', 'No Dates Task')->first();
+        $this->assertNull($task->start_date);
+        $this->assertNull($task->due_date);
+    }
+
+    public function test_task_index_shows_dates(): void
+    {
+        Task::factory()->for($this->project)->create([
+            'priority' => 1,
+            'start_date' => '2026-04-01',
+            'due_date' => '2026-04-15',
+        ]);
+
+        $response = $this->get(route('tasks.index'));
+
+        $response->assertOk();
+        $response->assertSee('Apr 01, 2026');
+        $response->assertSee('Apr 15, 2026');
     }
 }

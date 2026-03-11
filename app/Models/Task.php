@@ -11,7 +11,15 @@ class Task extends Model
     /** @use HasFactory<\Database\Factories\TaskFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'priority', 'project_id'];
+    protected $fillable = ['name', 'priority', 'project_id', 'start_date', 'due_date'];
+
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'due_date' => 'date',
+        ];
+    }
 
     public function project(): BelongsTo
     {

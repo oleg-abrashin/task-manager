@@ -15,7 +15,10 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'priority' => ['nullable', 'integer', 'min:1'],
             'project_id' => ['required', 'exists:projects,id'],
+            'start_date' => ['nullable', 'date'],
+            'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ];
     }
 }

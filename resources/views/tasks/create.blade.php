@@ -32,6 +32,34 @@
                     @enderror
                 </div>
 
+                <div class="mb-3">
+                    <label for="priority" class="form-label">Priority</label>
+                    <input type="number" name="priority" id="priority" class="form-control @error('priority') is-invalid @enderror"
+                           value="{{ old('priority') }}" min="1" placeholder="Auto-assigned if left empty">
+                    @error('priority')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control @error('start_date') is-invalid @enderror"
+                               value="{{ old('start_date') }}">
+                        @error('start_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label for="due_date" class="form-label">Due Date</label>
+                        <input type="date" name="due_date" id="due_date" class="form-control @error('due_date') is-invalid @enderror"
+                               value="{{ old('due_date') }}">
+                        @error('due_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Create Task</button>
                     <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary">Cancel</a>
