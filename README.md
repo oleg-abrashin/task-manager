@@ -22,7 +22,7 @@ A simple task management web application built with Laravel 12 and PHP 8.3+.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/pcruz-git/task-manager.git
+git clone https://github.com/oleg-abrashin/task-manager.git
 cd task-manager
 ```
 
