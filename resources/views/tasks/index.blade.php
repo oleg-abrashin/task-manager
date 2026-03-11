@@ -34,16 +34,17 @@
     @else
         <div class="card">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
                             <th style="width: 40px;"></th>
-                            <th style="width: 60px;">#</th>
+                            <th style="width: 70px;">Priority</th>
                             <th>Task Name</th>
                             <th>Project</th>
                             <th>Start Date</th>
                             <th>Due Date</th>
-                            <th>Created</th>
+                            <th>Created At</th>
+                            <th>Updated At</th>
                             <th style="width: 150px;">Actions</th>
                         </tr>
                     </thead>
@@ -52,11 +53,12 @@
                             <tr data-id="{{ $task->id }}">
                                 <td><span class="handle" style="cursor: grab;">&#9776;</span></td>
                                 <td><span class="badge bg-secondary">{{ $task->priority }}</span></td>
-                                <td>{{ $task->name }}</td>
-                                <td><small class="text-muted">{{ $task->project->name }}</small></td>
+                                <td><strong>{{ $task->name }}</strong></td>
+                                <td>{{ $task->project->name }}</td>
                                 <td>{{ $task->start_date?->format('M d, Y') ?? '—' }}</td>
                                 <td>{{ $task->due_date?->format('M d, Y') ?? '—' }}</td>
-                                <td><small class="text-muted">{{ $task->created_at->format('M d, Y') }}</small></td>
+                                <td><small class="text-muted">{{ $task->created_at->format('M d, Y H:i') }}</small></td>
+                                <td><small class="text-muted">{{ $task->updated_at->format('M d, Y H:i') }}</small></td>
                                 <td>
                                     <div class="d-flex gap-1">
                                         <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Edit</a>

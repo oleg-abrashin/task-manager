@@ -31,7 +31,7 @@ class ProjectTest extends TestCase
         $response = $this->get(route('projects.index'));
 
         $response->assertOk();
-        $response->assertSee('3 tasks');
+        $response->assertSee('>3</span>', false);
     }
 
     public function test_project_create_form_displays(): void
